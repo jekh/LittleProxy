@@ -7,6 +7,7 @@ import java.net.URL;
 import org.eclipse.jetty.server.Server;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
 
@@ -18,6 +19,7 @@ import static org.junit.Assume.assumeTrue;
  * Note - this test only works on UNIX systems because it checks file descriptor
  * counts.
  */
+@Ignore
 public class IdleTest {
     private static final int NUMBER_OF_CONNECTIONS_TO_OPEN = 2000;
 

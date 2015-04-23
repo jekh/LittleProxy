@@ -59,7 +59,7 @@ public class HttpFilterTest {
             }
         } finally {
             if (proxyServer != null) {
-                proxyServer.stop();
+                proxyServer.abort();
             }
         }
     }
