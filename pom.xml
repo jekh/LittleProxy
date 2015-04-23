@@ -14,7 +14,7 @@
      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
      <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
      <github.global.server>github</github.global.server>
-     <skipTests>true</skipTests>
+     <skipTests>false</skipTests>
   </properties>
 
   <organization>
@@ -341,7 +341,6 @@
           <skipTests>${skipTests}</skipTests>
           <forkCount>1</forkCount>
           <reuseForks>true</reuseForks>
-            <argLine>-javaagent:pginstrument-0.1.0-shadow.jar -Xbootclasspath/a:pginstrument-0.1.0-shadow.jar -Dpginstrument.outfile=LittleProxy.pro</argLine>
         </configuration>
       </plugin>
 
