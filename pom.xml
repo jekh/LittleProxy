@@ -3,7 +3,7 @@
   <groupId>net.lightbody.bmp</groupId>
   <artifactId>littleproxy</artifactId>
   <packaging>jar</packaging>
-  <version>1.1.0-beta1-bmp-SNAPSHOT</version>
+  <version>1.1.0-beta-bmp-1-SNAPSHOT</version>
   <name>LittleProxy</name>
   <description>
     LittleProxy is a high performance HTTP proxy written in Java and using the Netty networking framework. 
