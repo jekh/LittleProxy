@@ -3,7 +3,7 @@
   <groupId>net.lightbody.bmp</groupId>
   <artifactId>littleproxy</artifactId>
   <packaging>jar</packaging>
-  <version>1.1.0-beta-bmp-1-SNAPSHOT</version>
+  <version>1.1.0-beta-bmp-1</version>
   <name>LittleProxy</name>
   <description>
       This LittleProxy artifact is a beta release exclusively for BrowserMob Proxy. Other users should use the official
@@ -49,6 +49,7 @@
     <connection>scm:git:https://jekh@github.com/jekh/LittleProxy.git</connection>
     <developerConnection>scm:git:git@github.com:jekh/LittleProxy</developerConnection>
     <url>scm:git:git@github.com:jekh/LittleProxy.git</url>
+    <tag>littleproxy-1.1.0-beta-bmp-1</tag>
   </scm>
 
   <parent>
@@ -76,7 +77,7 @@
                 <jdk>[,1.8)</jdk>
             </activation>
             <properties>
-                <javadoc.opts/>
+                <javadoc.opts />
             </properties>
         </profile>
         <profile>
