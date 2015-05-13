@@ -16,8 +16,6 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Collections;
@@ -324,19 +322,17 @@ public class ProxyUtils {
     }
 
     /**
-     * Attempts to resolve the local machine's hostname.
+     * This is only temporary, until aliasing support is added to LittleProxy.
+     */
+    private static final String DEFAULT_HOSTNAME = "localhost.localdomain";
+
+    /**
+     * TODO: temporarily returning localhost.localdomain until aliasing support is added.
      *
      * @return the local machine's hostname
-     * @throws IllegalStateException if the hostname cannot be resolved
      */
     public static String getHostName() throws IllegalStateException {
-        try {
-            final InetAddress localAddress = NetworkUtils.getLocalHost();
-            return localAddress.getHostName();
-        } catch (final UnknownHostException e) {
-            LOG.error("Could not lookup host", e);
-            throw new IllegalStateException("Could not determine host!", e);
-        }
+        return DEFAULT_HOSTNAME;
     }
 
     /**

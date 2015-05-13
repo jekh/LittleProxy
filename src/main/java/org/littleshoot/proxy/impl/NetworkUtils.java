@@ -1,16 +1,14 @@
 package org.littleshoot.proxy.impl;
 
-import java.net.DatagramSocket;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Network utilities methods.
@@ -33,43 +31,15 @@ public class NetworkUtils {
      */
     public static InetAddress getLocalHost() throws UnknownHostException {
         try {
-            final InetAddress is = InetAddress.getLocalHost();
-            if (!is.isLoopbackAddress()) {
-                return is;
-            }
+            return InetAddress.getLocalHost();
         } catch (final UnknownHostException e) {
             // This can happen in odd cases like when using network cards.
             // Continue to try via UDP.
         }
 
-        InetAddress address = getLocalHostViaUdp();
-        if (address.isLoopbackAddress() || address.isAnyLocalAddress()) {
-            // UDP didn't work, resort to looking at interfaces
-            InetAddress alternateAddress = firstLocalNonLoopbackIpv4Address();
-            if (alternateAddress != null) {
-                address = alternateAddress;
-            }
-        }
-        return address;
-    }
+        InetAddress alternateAddress = firstLocalNonLoopbackIpv4Address();
 
-    private static InetAddress getLocalHostViaUdp() throws UnknownHostException {
-        final InetSocketAddress sa = new InetSocketAddress("www.google.com", 80);
-
-        DatagramSocket sock = null;
-        try {
-            sock = new DatagramSocket();
-            sock.connect(sa);
-            final InetAddress address = sock.getLocalAddress();
-            return address;
-        } catch (final SocketException e) {
-            LOG.info("Exception getting address", e);
-            return InetAddress.getLocalHost();
-        } finally {
-            if (sock != null) {
-                sock.close();
-            }
-        }
+        return alternateAddress;
     }
 
     /**
