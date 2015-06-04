@@ -347,8 +347,11 @@ public class ClientToProxyConnection extends ProxyConnection<HttpRequest> {
             writeEmptyBuffer();
         }
 
-        closeConnectionsAfterWriteIfNecessary(serverConnection,
-                currentHttpRequest, currentHttpResponse, httpObject);
+        // if we are MITMing, we let the client and server control the connection behavior, since we are supposed to be
+        // a simple pass-through tunnel
+        if (!isMitming()) {
+            closeConnectionsAfterWriteIfNecessary(serverConnection, currentHttpRequest, currentHttpResponse, httpObject);
+        }
     }
 
     /**
@@ -926,15 +929,14 @@ public class ClientToProxyConnection extends ProxyConnection<HttpRequest> {
     }
 
     /**
-     * If and only if our proxy is not running in transparent mode, modify the
-     * request headers to reflect that it was proxied.
+     * If our proxy is not running in transparent mode, modify the response headers to reflect that it was proxied.
+     * If we are MITMing, most of the headers should be left alone; however, we need to modify some of the headers
+     * so that we don't request content in a format we can't understand (for example, sdch-encoded content).
      * 
      * @param httpRequest
      */
     private void modifyRequestHeadersToReflectProxying(HttpRequest httpRequest) {
         if (!proxyServer.isTransparent()) {
-            LOG.debug("Modifying request headers for proxying");
-
             if (!currentServerConnection.hasUpstreamChainedProxy()) {
                 LOG.debug("Modifying request for proxy chaining");
                 // Strip host from uri
@@ -948,15 +950,23 @@ public class ClientToProxyConnection extends ProxyConnection<HttpRequest> {
             HttpHeaders headers = httpRequest.headers();
 
             removeSDCHEncoding(headers);
-            switchProxyConnectionHeader(headers);
-            stripConnectionTokens(headers);
-            stripHopByHopHeaders(headers);
-            ProxyUtils.addVia(httpRequest);
+
+            // if we are MITMing, don't modify any other headers, since this message is not supposed to be visible to any
+            // intermediate proxies
+            if (!isMitming()) {
+                LOG.debug("Modifying request headers to reflect proxying");
+
+                switchProxyConnectionHeader(headers);
+                stripConnectionTokens(headers);
+                stripHopByHopHeaders(headers);
+
+                ProxyUtils.addVia(httpRequest);
+            }
         }
     }
 
     /**
-     * If and only if our proxy is not running in transparent mode, modify the
+     * If our proxy is not running in transparent mode and it is not MITMing, modify the
      * response headers to reflect that it was proxied.
      * 
      * @param httpResponse
@@ -964,15 +974,20 @@ public class ClientToProxyConnection extends ProxyConnection<HttpRequest> {
      */
     private void modifyResponseHeadersToReflectProxying(
             HttpResponse httpResponse) {
-        if (!proxyServer.isTransparent()) {
+        // if we are MITMing, don't modify the headers, since this message is not supposed to be visible to any
+        // intermediate proxies
+        if (!proxyServer.isTransparent() && !isMitming()) {
+            LOG.debug("Modifying response headers to reflect proxying");
+
             HttpHeaders headers = httpResponse.headers();
             stripConnectionTokens(headers);
             stripHopByHopHeaders(headers);
+
             ProxyUtils.addVia(httpResponse);
 
             /*
              * RFC2616 Section 14.18
-             * 
+             *
              * A received message that does not have a Date header field MUST be
              * assigned one by the recipient if the message will be cached by
              * that recipient or gatewayed via a protocol which requires a Date.
