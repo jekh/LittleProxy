@@ -453,6 +453,7 @@ public class ClientToProxyConnection extends ProxyConnection<HttpRequest> {
                         || this.lastReadTime > currentServerConnection.lastReadTime;
         if (clientReadMoreRecentlyThanServer) {
             LOG.debug("Server timed out: {}", currentServerConnection);
+            currentFilters.serverToProxyResponseTimedOut();
             writeGatewayTimeout(currentRequest);
         }
         super.timedOut();
@@ -541,6 +542,9 @@ public class ClientToProxyConnection extends ProxyConnection<HttpRequest> {
                         serverConnection.getRemoteAddress(),
                         lastStateBeforeFailure,
                         cause);
+                // all attempts to connect using all available upstream proxies and direct connections have failed, so inform
+                // the filters that the connection failed
+                currentFilters.proxyToServerConnectionFailed();
                 connectionFailedUnrecoverably(initialRequest, serverConnection);
                 return false;
             }
