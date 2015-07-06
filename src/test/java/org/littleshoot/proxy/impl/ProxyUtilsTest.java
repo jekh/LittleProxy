@@ -203,4 +203,20 @@ public class ProxyUtilsTest {
         assertEquals(false, isResponseSelfTerminating);
 
     }
+
+    @Test
+    public void testSplitCommaSeparatedHeaderValues() {
+        assertThat("Incorrect header tokens", ProxyUtils.splitCommaSeparatedHeaderValues("one"), contains("one"));
+        assertThat("Incorrect header tokens", ProxyUtils.splitCommaSeparatedHeaderValues("one,two,three"), contains("one", "two", "three"));
+        assertThat("Incorrect header tokens", ProxyUtils.splitCommaSeparatedHeaderValues("one, two, three"), contains("one", "two", "three"));
+        assertThat("Incorrect header tokens", ProxyUtils.splitCommaSeparatedHeaderValues(" one,two,  three "), contains("one", "two", "three"));
+        assertThat("Incorrect header tokens", ProxyUtils.splitCommaSeparatedHeaderValues("\t\tone ,\t two,  three\t"), contains("one", "two", "three"));
+
+        assertThat("Expected no header tokens", ProxyUtils.splitCommaSeparatedHeaderValues(""), empty());
+        assertThat("Expected no header tokens", ProxyUtils.splitCommaSeparatedHeaderValues(","), empty());
+        assertThat("Expected no header tokens", ProxyUtils.splitCommaSeparatedHeaderValues(" "), empty());
+        assertThat("Expected no header tokens", ProxyUtils.splitCommaSeparatedHeaderValues("\t"), empty());
+        assertThat("Expected no header tokens", ProxyUtils.splitCommaSeparatedHeaderValues("  \t  \t  "), empty());
+        assertThat("Expected no header tokens", ProxyUtils.splitCommaSeparatedHeaderValues(" ,  ,\t, "), empty());
+    }
 }
