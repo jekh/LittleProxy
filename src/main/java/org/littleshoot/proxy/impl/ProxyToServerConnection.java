@@ -186,7 +186,7 @@ public class ProxyToServerConnection extends ProxyConnection<HttpResponse> {
         this.currentFilters = initialFilters;
 
         // Report connection status to HttpFilters
-        this.currentFilters.proxyToServerConnectionQueued();
+        currentFilters.proxyToServerConnectionQueued();
 
         setupConnectionParameters();
     }
@@ -220,6 +220,7 @@ public class ProxyToServerConnection extends ProxyConnection<HttpResponse> {
             return AWAITING_CHUNK;
         } else {
             currentFilters.serverToProxyResponseReceived();
+
             return AWAITING_INITIAL;
         }
     }
@@ -356,9 +357,12 @@ public class ProxyToServerConnection extends ProxyConnection<HttpResponse> {
             } else if (newState == DISCONNECTED) {
                 currentFilters.proxyToServerConnectionFailed();
             }
-        } else if (getCurrentState() == HANDSHAKING
-                && newState == AWAITING_INITIAL) {
-            currentFilters.proxyToServerConnectionSucceeded(ctx);
+        } else if (getCurrentState() == HANDSHAKING) {
+            if (newState == AWAITING_INITIAL) {
+                currentFilters.proxyToServerConnectionSucceeded(ctx);
+            } else if (newState == DISCONNECTED) {
+                currentFilters.proxyToServerConnectionFailed();
+            }
         } else if (getCurrentState() == AWAITING_CHUNK
                 && newState != AWAITING_CHUNK) {
             currentFilters.serverToProxyResponseReceived();
@@ -611,7 +615,6 @@ public class ProxyToServerConnection extends ProxyConnection<HttpResponse> {
                     proxyServer.getConnectTimeout());
 
             if (localAddress != null) {
-                cb.bind(localAddress);
                 return cb.connect(remoteAddress, localAddress);
             } else {
                 return cb.connect(remoteAddress);
@@ -729,8 +732,7 @@ public class ProxyToServerConnection extends ProxyConnection<HttpResponse> {
             this.connectAndWrite(initialRequest);
             return true; // yes, we fell back
         } else {
-            // nothing to fall back to. connection failed, so transition from "CONNECTING" to "DISCONNECTED".
-            become(DISCONNECTED);
+            // nothing to fall back to.
             return false;
         }
     }
@@ -769,11 +771,12 @@ public class ProxyToServerConnection extends ProxyConnection<HttpResponse> {
                 // unable to resolve the hostname to an IP address. notify the filters of the failure before allowing the
                 // exception to bubble up.
                 this.currentFilters.proxyToServerResolutionFailed(hostAndPort);
+
                 throw e;
             }
 
-            this.currentFilters.proxyToServerResolutionSucceeded(
-                    serverHostAndPort, this.remoteAddress);
+            this.currentFilters.proxyToServerResolutionSucceeded(serverHostAndPort, this.remoteAddress);
+
 
             this.localAddress = proxyServer.getLocalAddress();
         }
@@ -945,4 +948,5 @@ public class ProxyToServerConnection extends ProxyConnection<HttpResponse> {
             }
         }
     };
+
 }

@@ -26,7 +26,8 @@
         <level value="info"/>
     </logger>
     <root>
-        <level value="warn"/>
+        <level value="INFO"/>
+        <appender-ref ref="TextFile"/>
         <appender-ref ref="stdout"/>
     </root>
 </log4j:configuration>
