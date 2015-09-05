@@ -37,33 +37,16 @@ public class ProxyUtilsTest {
 
     @Test
     public void testAddNewViaHeader() {
-        String hostname = ProxyUtils.getHostName();
+        String hostname = "hostname";
 
         HttpMessage httpMessage = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/endpoint");
-        ProxyUtils.addVia(httpMessage);
+        ProxyUtils.addVia(httpMessage, hostname);
 
         List<String> viaHeaders = httpMessage.headers().getAll(HttpHeaders.Names.VIA);
         assertThat(viaHeaders, hasSize(1));
 
         String expectedViaHeader = "1.1 " + hostname;
         assertEquals(expectedViaHeader, viaHeaders.get(0));
-    }
-
-    @Test
-    public void testAddNewViaHeaderToExistingViaHeader() {
-        String hostname = ProxyUtils.getHostName();
-
-        HttpMessage httpMessage = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/endpoint");
-        httpMessage.headers().add(HttpHeaders.Names.VIA, "1.1 otherproxy");
-        ProxyUtils.addVia(httpMessage);
-
-        List<String> viaHeaders = httpMessage.headers().getAll(HttpHeaders.Names.VIA);
-        assertThat(viaHeaders, hasSize(2));
-
-        assertEquals("1.1 otherproxy", viaHeaders.get(0));
-
-        String expectedViaHeader = "1.1 " + hostname;
-        assertEquals(expectedViaHeader, viaHeaders.get(1));
     }
 
     @Test
@@ -202,6 +185,23 @@ public class ProxyUtilsTest {
         isResponseSelfTerminating = ProxyUtils.isResponseSelfTerminating(httpResponse);
         assertEquals(false, isResponseSelfTerminating);
 
+    }
+
+    @Test
+    public void testAddNewViaHeaderToExistingViaHeader() {
+        String hostname = "hostname";
+
+        HttpMessage httpMessage = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/endpoint");
+        httpMessage.headers().add(HttpHeaders.Names.VIA, "1.1 otherproxy");
+        ProxyUtils.addVia(httpMessage, hostname);
+
+        List<String> viaHeaders = httpMessage.headers().getAll(HttpHeaders.Names.VIA);
+        assertThat(viaHeaders, hasSize(2));
+
+        assertEquals("1.1 otherproxy", viaHeaders.get(0));
+
+        String expectedViaHeader = "1.1 " + hostname;
+        assertEquals(expectedViaHeader, viaHeaders.get(1));
     }
 
     @Test

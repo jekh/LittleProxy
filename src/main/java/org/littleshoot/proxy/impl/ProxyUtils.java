@@ -18,6 +18,8 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Collections;
@@ -65,12 +67,6 @@ public class ProxyUtils {
      * Date format pattern used to parse HTTP date headers in RFC 1123 format.
      */
     private static final String PATTERN_RFC1123 = "EEE, dd MMM yyyy HH:mm:ss zzz";
-
-    private static final String hostName = getHostName();
-
-    // Should never be constructed.
-    private ProxyUtils() {
-    }
 
     // Schemes are case-insensitive:
     // http://tools.ietf.org/html/rfc3986#section-3.1
@@ -235,27 +231,37 @@ public class ProxyUtils {
     }
 
     /**
-     * Adds the Via header to specify that the message has passed through the
-     * proxy.
+     * Adds the Via header to specify that the message has passed through the proxy. The specified alias will be
+     * appended to the Via header line. The alias may be the hostname of the machine proxying the request, or a
+     * pseudonym. From RFC 7230, section 5.7.1:
+     * <pre>
+         The received-by portion of the field value is normally the host and
+         optional port number of a recipient server or client that
+         subsequently forwarded the message.  However, if the real host is
+         considered to be sensitive information, a sender MAY replace it with
+         a pseudonym.
+     * </pre>
+     *
      * 
-     * @param msg
-     *            The HTTP message.
+     * @param httpMessage HTTP message to add the Via header to
+     * @param alias the alias to provide in the Via header for this proxy
      */
-    public static void addVia(final HttpMessage msg) {
+    public static void addVia(HttpMessage httpMessage, String alias) {
         final StringBuilder sb = new StringBuilder();
-        sb.append(msg.getProtocolVersion().majorVersion());
+        sb.append(httpMessage.getProtocolVersion().majorVersion());
         sb.append('.');
-        sb.append(msg.getProtocolVersion().minorVersion());
+        sb.append(httpMessage.getProtocolVersion().minorVersion());
         sb.append(' ');
-        sb.append(hostName);
+        sb.append(alias);
+
         final List<String> vias;
-        if (msg.headers().contains(HttpHeaders.Names.VIA)) {
-            vias = msg.headers().getAll(HttpHeaders.Names.VIA);
+        if (httpMessage.headers().contains(HttpHeaders.Names.VIA)) {
+            vias = httpMessage.headers().getAll(HttpHeaders.Names.VIA);
             vias.add(sb.toString());
         } else {
             vias = Collections.singletonList(sb.toString());
         }
-        msg.headers().set(HttpHeaders.Names.VIA, vias);
+        httpMessage.headers().set(HttpHeaders.Names.VIA, vias);
     }
 
     /**
@@ -336,47 +342,6 @@ public class ProxyUtils {
         final String str = val.trim();
         return StringUtils.isNotBlank(str)
                 && (str.equalsIgnoreCase(str1) || str.equalsIgnoreCase(str2));
-    }
-
-    /**
-     * This is only temporary, until aliasing support is added to LittleProxy.
-     */
-    private static final String DEFAULT_HOSTNAME = "localhost.localdomain";
-
-    /**
-     * TODO: temporarily returning localhost.localdomain until aliasing support is added.
-     *
-     * @return the local machine's hostname
-     */
-    public static String getHostName() throws IllegalStateException {
-        return DEFAULT_HOSTNAME;
-    }
-
-    /**
-     * Determines if the specified header should be removed from the proxied response because it is a hop-by-hop header, as defined by the
-     * HTTP 1.1 spec in section 13.5.1. The comparison is case-insensitive, so "Connection" will be treated the same as "connection" or "CONNECTION".
-     * From http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.5.1 :
-     * <pre>
-       The following HTTP/1.1 headers are hop-by-hop headers:
-        - Connection
-        - Keep-Alive
-        - Proxy-Authenticate
-        - Proxy-Authorization
-        - TE
-        - Trailers [LittleProxy note: actual header name is Trailer]
-        - Transfer-Encoding [LittleProxy note: this header is not normally removed when proxying, since the proxy does not re-chunk
-                            responses. The exception is when an HttpObjectAggregator is enabled, which aggregates chunked content and removes
-                            the 'Transfer-Encoding: chunked' header itself.]
-        - Upgrade
-
-       All other headers defined by HTTP/1.1 are end-to-end headers.
-     * </pre>
-     *
-     * @param headerName the header name
-     * @return true if this header is a hop-by-hop header and should be removed when proxying, otherwise false
-     */
-    public static boolean shouldRemoveHopByHopHeader(String headerName) {
-        return SHOULD_NOT_PROXY_HOP_BY_HOP_HEADERS.contains(headerName.toLowerCase(Locale.US));
     }
 
     /*
@@ -534,6 +499,47 @@ public class ProxyUtils {
         newResponse.headers().add(originalResponse.headers());
 
         return newResponse;
+    }
+
+    /**
+     * Attempts to resolve the local machine's hostname.
+     *
+     * @return the local machine's hostname, or null if a hostname cannot be determined
+     */
+    public static String getHostName() {
+        try {
+            return InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            LOG.warn("Could not lookup localhost", e);
+            return null;
+        }
+    }
+
+    /**
+     * Determines if the specified header should be removed from the proxied response because it is a hop-by-hop header, as defined by the
+     * HTTP 1.1 spec in section 13.5.1. The comparison is case-insensitive, so "Connection" will be treated the same as "connection" or "CONNECTION".
+     * From http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.5.1 :
+     * <pre>
+       The following HTTP/1.1 headers are hop-by-hop headers:
+        - Connection
+        - Keep-Alive
+        - Proxy-Authenticate
+        - Proxy-Authorization
+        - TE
+        - Trailers [LittleProxy note: actual header name is Trailer]
+        - Transfer-Encoding [LittleProxy note: this header is not normally removed when proxying, since the proxy does not re-chunk
+                            responses. The exception is when an HttpObjectAggregator is enabled, which aggregates chunked content and removes
+                            the 'Transfer-Encoding: chunked' header itself.]
+        - Upgrade
+
+       All other headers defined by HTTP/1.1 are end-to-end headers.
+     * </pre>
+     *
+     * @param headerName the header name
+     * @return true if this header is a hop-by-hop header and should be removed when proxying, otherwise false
+     */
+    public static boolean shouldRemoveHopByHopHeader(String headerName) {
+        return SHOULD_NOT_PROXY_HOP_BY_HOP_HEADERS.contains(headerName.toLowerCase(Locale.US));
     }
 
     /**
