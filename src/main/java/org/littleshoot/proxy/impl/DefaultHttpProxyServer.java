@@ -224,23 +224,23 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
      *            write throttle bandwidth
      */
     private DefaultHttpProxyServer(ServerGroup serverGroup,
-                                   TransportProtocol transportProtocol,
-                                   InetSocketAddress requestedAddress,
-                                   SslEngineSource sslEngineSource,
-                                   boolean authenticateSslClients,
-                                   ProxyAuthenticator proxyAuthenticator,
-                                   ChainedProxyManager chainProxyManager,
-                                   MitmManager mitmManager,
-                                   HttpFiltersSource filtersSource,
-                                   boolean transparent,
-                                   int idleConnectionTimeout,
-                                   Collection<ActivityTracker> activityTrackers,
-                                   int connectTimeout,
-                                   HostResolver serverResolver,
-                                   long readThrottleBytesPerSecond,
-                                   long writeThrottleBytesPerSecond,
-                                   InetSocketAddress localAddress,
-                                   String proxyAlias) {
+            TransportProtocol transportProtocol,
+            InetSocketAddress requestedAddress,
+            SslEngineSource sslEngineSource,
+            boolean authenticateSslClients,
+            ProxyAuthenticator proxyAuthenticator,
+            ChainedProxyManager chainProxyManager,
+            MitmManager mitmManager,
+            HttpFiltersSource filtersSource,
+            boolean transparent,
+            int idleConnectionTimeout,
+            Collection<ActivityTracker> activityTrackers,
+            int connectTimeout,
+            HostResolver serverResolver,
+            long readThrottleBytesPerSecond,
+            long writeThrottleBytesPerSecond,
+            InetSocketAddress localAddress,
+            String proxyAlias) {
         this.serverGroup = serverGroup;
         this.transportProtocol = transportProtocol;
         this.requestedAddress = requestedAddress;
@@ -363,7 +363,8 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
                 serverResolver,
                 globalTrafficShapingHandler != null ? globalTrafficShapingHandler.getReadLimit() : 0,
                 globalTrafficShapingHandler != null ? globalTrafficShapingHandler.getWriteLimit() : 0,
-                localAddress, proxyAlias);
+                localAddress,
+                proxyAlias);
     }
 
     @Override
@@ -570,10 +571,10 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
         private long readThrottleBytesPerSecond;
         private long writeThrottleBytesPerSecond;
         private InetSocketAddress localAddress;
+        private String proxyAlias;
         private int clientToProxyAcceptorThreads = ServerGroup.DEFAULT_INCOMING_ACCEPTOR_THREADS;
         private int clientToProxyWorkerThreads = ServerGroup.DEFAULT_INCOMING_WORKER_THREADS;
         private int proxyToServerWorkerThreads = ServerGroup.DEFAULT_OUTGOING_WORKER_THREADS;
-        private String proxyAlias;
 
         private DefaultHttpProxyServerBootstrap() {
         }
