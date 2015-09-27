@@ -33,6 +33,7 @@ import org.littleshoot.proxy.ProxyAuthenticator;
 import org.littleshoot.proxy.SslEngineSource;
 
 import javax.net.ssl.SSLSession;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -44,6 +45,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
@@ -724,9 +726,16 @@ public class ClientToProxyConnection extends ProxyConnection<HttpRequest> {
     @Override
     protected void exceptionCaught(Throwable cause) {
         try {
-            if (cause instanceof ClosedChannelException ||
-                    (cause.getMessage() != null && cause.getMessage().contains("Connection reset by peer"))) {
-                LOG.warn("Caught an exception on ClientToProxyConnection", cause);
+            if (cause instanceof IOException) {
+                // IOExceptions are pretty common, for example when a browser is killed and aborts a connection. for an HTTP
+                // server or client, these types of IOExceptions are not really "exceptional", but are expected and must be
+                // handled gracefully. rather than flood the logs with stack traces for these expected exceptions, we log
+                // the message at the INFO level and the stack trace at the DEBUG level.
+                LOG.info("An IOException occurred on ClientToProxyConnection: " + cause.getMessage());
+                LOG.debug("An IOException occurred on ClientToProxyConnection", cause);
+            } else if (cause instanceof RejectedExecutionException) {
+                LOG.info("An executor rejected a read or write operation on the ClientToProxyConnection (this is normal if the proxy is shutting down). Message: " + cause.getMessage());
+                LOG.debug("A RejectedExecutionException occurred on ClientToProxyConnection", cause);
             } else {
                 LOG.error("Caught an exception on ClientToProxyConnection", cause);
             }
@@ -734,8 +743,6 @@ public class ClientToProxyConnection extends ProxyConnection<HttpRequest> {
             // always disconnect the client when an exception occurs on the channel
             disconnect();
         }
-
-
     }
 
     /***************************************************************************
