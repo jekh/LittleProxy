@@ -727,10 +727,9 @@ public class ClientToProxyConnection extends ProxyConnection<HttpRequest> {
     protected void exceptionCaught(Throwable cause) {
         try {
             if (cause instanceof IOException) {
-                // IOExceptions are pretty common, for example when a browser is killed and aborts a connection. for an HTTP
-                // server or client, these types of IOExceptions are not really "exceptional", but are expected and must be
-                // handled gracefully. rather than flood the logs with stack traces for these expected exceptions, we log
-                // the message at the INFO level and the stack trace at the DEBUG level.
+                // IOExceptions are expected errors, for example when a browser is killed and aborts a connection.
+                // rather than flood the logs with stack traces for these expected exceptions, we log the message at the
+                // INFO level and the stack trace at the DEBUG level.
                 LOG.info("An IOException occurred on ClientToProxyConnection: " + cause.getMessage());
                 LOG.debug("An IOException occurred on ClientToProxyConnection", cause);
             } else if (cause instanceof RejectedExecutionException) {
