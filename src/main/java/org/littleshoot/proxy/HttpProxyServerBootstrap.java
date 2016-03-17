@@ -93,11 +93,17 @@ public interface HttpProxyServerBootstrap {
     /**
      * <p>
      * Specify an {@link SslEngineSource} to use for encrypting inbound
-     * connections.
+     * connections. Enabling this will enable SSL client authentication
+     * by default (see {@link #withAuthenticateSslClients(boolean)})
      * </p>
      * 
      * <p>
      * Default = null
+     * </p>
+     * 
+     * <p>
+     * Note - This and {@link #withManInTheMiddle(MitmManager)} are
+     * mutually exclusive.
      * </p>
      * 
      * @param sslEngineSource
@@ -148,11 +154,6 @@ public interface HttpProxyServerBootstrap {
      * Default = null
      * </p>
      * 
-     * <p>
-     * Note - This and {@link #withManInTheMiddle(MitmManager)} are currently
-     * mutually exclusive.
-     * </p>
-     * 
      * @param chainProxyManager
      * @return
      */
@@ -170,8 +171,8 @@ public interface HttpProxyServerBootstrap {
      * </p>
      * 
      * <p>
-     * Note - This and {@link #withChainProxyManager(ChainedProxyManager)} are
-     * currently mutually exclusive.
+     * Note - This and {@link #withSslEngineSource(SslEngineSource)} are
+     * mutually exclusive.
      * </p>
      * 
      * @param mitmManager

@@ -14,7 +14,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <github.global.server>github</github.global.server>
-        <netty.version>4.0.23.Final</netty.version>
+        <netty.version>4.0.34.Final</netty.version>
+        <slf4j.version>1.7.18</slf4j.version>
     </properties>
 
     <organization>
@@ -129,7 +130,7 @@
         <profile>
             <id>netty-4.1</id>
             <properties>
-                <netty.version>4.1.0.Beta6</netty.version>
+                <netty.version>4.1.0.CR3</netty.version>
             </properties>
         </profile>
     </profiles>
@@ -196,14 +197,14 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>2.0.31-beta</version>
+            <version>2.0.44-beta</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.mock-server</groupId>
             <artifactId>mockserver-netty</artifactId>
-            <version>3.9.17</version>
+            <version>3.10.4</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -236,7 +237,7 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.5</version>
+            <version>4.5.2</version>
             <scope>test</scope>
         </dependency>
 
@@ -274,14 +275,14 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.12</version>
+            <version>${slf4j.version}</version>
             <optional>true</optional>
         </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.12</version>
+            <version>${slf4j.version}</version>
         </dependency>
 
         <!-- Test dependencies -->
@@ -445,10 +446,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.18.1</version>
+                <version>2.19.1</version>
                 <configuration>
-                    <forkCount>1</forkCount>
-                    <reuseForks>true</reuseForks>
+                    <argLine>-Xmx1g -XX:MaxPermSize=256m</argLine>
                 </configuration>
             </plugin>
 
@@ -578,7 +578,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>2.18.1</version>
+                <version>2.19.1</version>
                 <configuration>
                     <showSuccess>false</showSuccess>
                 </configuration>
