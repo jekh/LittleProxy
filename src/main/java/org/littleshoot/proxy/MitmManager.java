@@ -1,5 +1,7 @@
 package org.littleshoot.proxy;
 
+import io.netty.handler.codec.http.HttpRequest;
+
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLSession;
 
@@ -14,7 +16,7 @@ public interface MitmManager {
      *
      * @param peerHost to start a client connection to the server.
      * @param peerPort to start a client connection to the server.
-     * 
+     *
      * @return an SSLEngine used to connect to an upstream server
      */
     SSLEngine serverSslEngine(String peerHost, int peerPort);
@@ -31,7 +33,7 @@ public interface MitmManager {
      * Creates an {@link SSLEngine} for encrypting the client connection based
      * on the given serverSslSession.
      * </p>
-     * 
+     *
      * <p>
      * The serverSslSession is provided in case this method needs to inspect the
      * server's certificates or something else about the encryption on the way
@@ -43,9 +45,10 @@ public interface MitmManager {
      * by issuing replacement certificates signed by the proxy's own
      * certificate.
      * </p>
-     * 
+     *
+     * @param httpRequest the HTTP CONNECT request that is being man-in-the-middled
      * @param serverSslSession the {@link SSLSession} that's been established with the server
      * @return the SSLEngine used to connect to the client
      */
-    SSLEngine clientSslEngineFor(SSLSession serverSslSession);
+    SSLEngine clientSslEngineFor(HttpRequest httpRequest, SSLSession serverSslSession);
 }
