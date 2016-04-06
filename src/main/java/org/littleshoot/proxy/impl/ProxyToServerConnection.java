@@ -36,14 +36,11 @@ import org.littleshoot.proxy.HttpFilters;
 import org.littleshoot.proxy.MitmManager;
 import org.littleshoot.proxy.TransportProtocol;
 import org.littleshoot.proxy.UnknownTransportProtocolException;
-import org.slf4j.spi.LocationAwareLogger;
 
 import javax.net.ssl.SSLSession;
 import java.io.IOException;
-import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.RejectedExecutionException;
@@ -110,7 +107,7 @@ public class ProxyToServerConnection extends ProxyConnection<HttpResponse> {
      * Keeps track of HttpRequests that have been issued so that we can
      * associate them with responses that we get back
      */
-    private final Queue<HttpRequest> issuedRequests = new LinkedList<HttpRequest>();
+    private final Queue<HttpRequest> issuedRequests = new ConcurrentLinkedQueue<HttpRequest>();
 
     /**
      * While we're doing a chunked transfer, this keeps track of the HttpRequest
