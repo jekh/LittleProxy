@@ -23,7 +23,7 @@
         <level value="off"/>
     </logger>
     <logger name="org.littleshoot.proxy">
-        <level value="info"/>
+        <level value="DEBUG"/>
     </logger>
     <root>
         <level value="INFO"/>
