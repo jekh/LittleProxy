@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * processing, and so on.
  */
 class ConnectionFlow {
-    private Queue<ConnectionFlowStep> steps = new ConcurrentLinkedQueue<ConnectionFlowStep>();
+    private final Queue<ConnectionFlowStep> steps = new ConcurrentLinkedQueue<ConnectionFlowStep>();
 
     private final ClientToProxyConnection clientConnection;
     private final ProxyToServerConnection serverConnection;
@@ -142,7 +142,9 @@ class ConnectionFlow {
                     public void operationComplete(
                             io.netty.util.concurrent.Future<?> future)
                             throws Exception {
+                        LOG.info("About to synchronize on connectLock on step: {}", currentStep);
                         synchronized (connectLock) {
+                            LOG.info("connectLock monitor acquired successfully on step: {}", currentStep);
                             if (future.isSuccess()) {
                                 LOG.debug("ConnectionFlowStep succeeded");
                                 currentStep
@@ -162,7 +164,9 @@ class ConnectionFlow {
      * {@link ProxyToServerConnection} that we succeeded.
      */
     void succeed() {
+        serverConnection.getLOG().info("About to synchronize on connectLock on step: {}", currentStep);
         synchronized (connectLock) {
+            serverConnection.getLOG().info("connectLock monitor acquired successfully on step: {}", currentStep);
             serverConnection.getLOG().debug(
                     "Connection flow completed successfully: {}", currentStep);
             serverConnection.connectionSucceeded(!suppressInitialRequest);
@@ -184,7 +188,9 @@ class ConnectionFlow {
                     @Override
                     public void operationComplete(Future future)
                             throws Exception {
+                        currentStep.getConnection().getLOG().info("About to synchronize on connectLock on step: {}", currentStep);
                         synchronized (connectLock) {
+                            serverConnection.getLOG().info("connectLock monitor acquired successfully on step: {}", currentStep);
                             if (!clientConnection.serverConnectionFailed(
                                     serverConnection,
                                     lastStateBeforeFailure,
@@ -214,7 +220,9 @@ class ConnectionFlow {
      * okay to proceed.
      */
     private void notifyThreadsWaitingForConnection() {
+        serverConnection.getLOG().info("About to notifyAll on connectLock on step: {}", currentStep);
         connectLock.notifyAll();
+        serverConnection.getLOG().info("notifyAll complete on connectLock on step: {}", currentStep);
     }
 
 }

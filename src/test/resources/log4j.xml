@@ -25,6 +25,9 @@
     <logger name="org.littleshoot.proxy">
         <level value="DEBUG"/>
     </logger>
+    <logger name="http.wire">
+        <level value="DEBUG"/>
+    </logger>
     <root>
         <level value="INFO"/>
         <appender-ref ref="TextFile"/>
